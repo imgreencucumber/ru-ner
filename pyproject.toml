@@ -20,6 +20,9 @@ dev = [
     "pytest>=8",
     "ruff>=0.6",
     "ipykernel",
+    "matplotlib>=3.11.2",
+    "nbformat>=5.11.1",
+    "nbconvert>=7.17.1",
 ]
 
 [build-system]
@@ -45,3 +48,7 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# notebooks set up warnings/logging before the noisy imports
+"*.ipynb" = ["E402"]
