@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data and artifacts: too large for git, reproduced by scripts
+data/raw/
+data/interim/
+models/
+outputs/
+*.onnx
+*.safetensors
+*.bin
+
+# Secrets (API keys for DeepSeek / GigaChat / YandexGPT)
+.env
+
+# IDE / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
