@@ -1,7 +1,7 @@
 # ru-ner
 
 NER для русского языка (PER, LOC, ORG). Сравниваю CRF, дообученный ruBERT
-(Hugging Face `transformers`) и LLM по качеству, скорости и стоимости.
+(Hugging Face `transformers`) и LLM по качеству и скорости, для LLM ещё и по расходу токенов.
 
 Проект в разработке.
 
@@ -12,7 +12,7 @@ NER для русского языка (PER, LOC, ORG). Сравниваю CRF, 
 - [x] Fine-tuning ruBERT
 - [x] Инструменты оценки: bootstrap, новые сущности, типы ошибок
 - [x] ONNX + квантизация
-- [ ] Сравнение с LLM (DeepSeek, GigaChat, YandexGPT)
+- [x] Сравнение с LLM (GigaChat, YandexGPT)
 - [ ] Сравнительный разбор ошибок
 - [ ] FastAPI + Docker, демо
 

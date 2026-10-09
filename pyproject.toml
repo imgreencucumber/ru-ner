@@ -19,6 +19,9 @@ dependencies = [
     "onnxruntime>=1.31.0",
     "onnxscript>=0.7.2",
     "py-cpuinfo>=9.0.0",
+    "gigachat>=0.2.3",
+    "python-dotenv>=1.2.4",
+    "httpx>=0.28.1",
 ]
 
 [dependency-groups]

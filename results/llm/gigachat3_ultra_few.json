@@ -1,0 +1,56 @@
+{
+  "model": "gigachat3_ultra",
+  "mode": "few",
+  "temperature": 0.0,
+  "n_sentences": 1922,
+  "overall": {
+    "precision": 0.8682404611583859,
+    "recall": 0.7905523619095226,
+    "f1": 0.8275771847200418,
+    "support": 4001
+  },
+  "PER": {
+    "precision": 0.9528962444302992,
+    "recall": 0.9535031847133758,
+    "f1": 0.9531996179560649,
+    "support": 1570
+  },
+  "LOC": {
+    "precision": 0.8923857868020305,
+    "recall": 0.7480851063829788,
+    "f1": 0.813888888888889,
+    "support": 1175
+  },
+  "ORG": {
+    "precision": 0.7240110395584176,
+    "recall": 0.6265923566878981,
+    "f1": 0.6717883055911225,
+    "support": 1256
+  },
+  "answered_only": {
+    "n_sentences": 1911,
+    "overall": {
+      "precision": 0.8682404611583859,
+      "recall": 0.8048346055979644,
+      "f1": 0.8353360623266869,
+      "support": 3930
+    }
+  },
+  "alignment": {
+    "exact": 3498,
+    "returned": 3659,
+    "fuzzy": 145,
+    "unmatched": 16,
+    "parse_error": 5,
+    "no_json": 6
+  },
+  "tokens": {
+    "input": 100552,
+    "output": 65860,
+    "cached_input": 1098624
+  },
+  "latency": {
+    "median_ms": 749.0,
+    "p95_ms": 1407.2499999999973
+  }
+}

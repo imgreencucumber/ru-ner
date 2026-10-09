@@ -1,0 +1,56 @@
+{
+  "model": "yandexgpt_pro",
+  "mode": "few",
+  "temperature": 0.0,
+  "n_sentences": 100,
+  "overall": {
+    "precision": 0.8468468468468469,
+    "recall": 0.5136612021857924,
+    "f1": 0.6394557823129252,
+    "support": 183
+  },
+  "PER": {
+    "precision": 0.9361702127659575,
+    "recall": 0.4731182795698925,
+    "f1": 0.6285714285714287,
+    "support": 93
+  },
+  "LOC": {
+    "precision": 0.84,
+    "recall": 0.5384615384615384,
+    "f1": 0.6562499999999999,
+    "support": 39
+  },
+  "ORG": {
+    "precision": 0.7435897435897436,
+    "recall": 0.5686274509803921,
+    "f1": 0.6444444444444445,
+    "support": 51
+  },
+  "answered_only": {
+    "n_sentences": 68,
+    "overall": {
+      "precision": 0.8468468468468469,
+      "recall": 0.8623853211009175,
+      "f1": 0.8545454545454546,
+      "support": 109
+    }
+  },
+  "alignment": {
+    "returned": 114,
+    "no_json": 31,
+    "exact": 109,
+    "fuzzy": 2,
+    "parse_error": 1,
+    "unmatched": 3
+  },
+  "tokens": {
+    "input": 42260,
+    "output": 2410,
+    "cached_input": 0
+  },
+  "latency": {
+    "median_ms": 482.0,
+    "p95_ms": 1517.35
+  }
+}

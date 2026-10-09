@@ -62,6 +62,166 @@
         }
       }
     },
+    "gigachat3_lightning_few": {
+      "c3_test": {
+        "f1": 0.588903743315508,
+        "f1_ci95": [
+          0.5728557377185154,
+          0.6063875025867769
+        ],
+        "f1_without_train_duplicates": 0.5883940620782726,
+        "seen_unseen": {
+          "seen": {
+            "precision": 0.9363207547169812,
+            "recall": 0.3420939250323137,
+            "f1": 0.5011044493531083,
+            "support": 2321
+          },
+          "unseen": {
+            "precision": 0.852863436123348,
+            "recall": 0.5761904761904761,
+            "f1": 0.6877442273534636,
+            "support": 1680
+          }
+        },
+        "errors": {
+          "correct": 1762,
+          "wrong_type": 13,
+          "wrong_boundary": 156,
+          "wrong_boundary_and_type": 53,
+          "missed": 2017,
+          "spurious": 44
+        }
+      }
+    },
+    "gigachat3_lightning_zero": {
+      "c3_test": {
+        "f1": 0.36009634684865516,
+        "f1_ci95": [
+          0.34341814448345537,
+          0.3772415729947014
+        ],
+        "f1_without_train_duplicates": 0.36072874493927126,
+        "seen_unseen": {
+          "seen": {
+            "precision": 0.940677966101695,
+            "recall": 0.14347264110297286,
+            "f1": 0.24897196261682242,
+            "support": 2321
+          },
+          "unseen": {
+            "precision": 0.8995215311004785,
+            "recall": 0.3357142857142857,
+            "f1": 0.4889466840052016,
+            "support": 1680
+          }
+        },
+        "errors": {
+          "correct": 897,
+          "wrong_type": 0,
+          "wrong_boundary": 72,
+          "wrong_boundary_and_type": 13,
+          "missed": 3019,
+          "spurious": 4
+        }
+      }
+    },
+    "gigachat3_pro_few": {
+      "c3_test": {
+        "f1": 0.7429979253112033,
+        "f1_ci95": [
+          0.7283875602775889,
+          0.759630762369223
+        ],
+        "f1_without_train_duplicates": 0.7432980253694259,
+        "seen_unseen": {
+          "seen": {
+            "precision": 0.9633995037220844,
+            "recall": 0.6691081430417923,
+            "f1": 0.7897279430460209,
+            "support": 2321
+          },
+          "unseen": {
+            "precision": 0.6250595521676989,
+            "recall": 0.780952380952381,
+            "f1": 0.69436358825086,
+            "support": 1680
+          }
+        },
+        "errors": {
+          "correct": 2865,
+          "wrong_type": 33,
+          "wrong_boundary": 294,
+          "wrong_boundary_and_type": 169,
+          "missed": 640,
+          "spurious": 465
+        }
+      }
+    },
+    "gigachat3_pro_zero": {
+      "c3_test": {
+        "f1": 0.6785714285714286,
+        "f1_ci95": [
+          0.6636844792657024,
+          0.6926760476712621
+        ],
+        "f1_without_train_duplicates": 0.678877400295421,
+        "seen_unseen": {
+          "seen": {
+            "precision": 0.9547359597652976,
+            "recall": 0.4907367514002585,
+            "f1": 0.6482640865110985,
+            "support": 2321
+          },
+          "unseen": {
+            "precision": 0.7197802197802198,
+            "recall": 0.7017857142857142,
+            "f1": 0.7106690777576854,
+            "support": 1680
+          }
+        },
+        "errors": {
+          "correct": 2318,
+          "wrong_type": 20,
+          "wrong_boundary": 201,
+          "wrong_boundary_and_type": 77,
+          "missed": 1385,
+          "spurious": 268
+        }
+      }
+    },
+    "gigachat3_ultra_few": {
+      "c3_test": {
+        "f1": 0.8275771847200418,
+        "f1_ci95": [
+          0.8145841835372126,
+          0.8412218901498961
+        ],
+        "f1_without_train_duplicates": 0.827986798679868,
+        "seen_unseen": {
+          "seen": {
+            "precision": 0.9551835853131749,
+            "recall": 0.7621714778112882,
+            "f1": 0.8478312964294272,
+            "support": 2321
+          },
+          "unseen": {
+            "precision": 0.7783361250697934,
+            "recall": 0.8297619047619048,
+            "f1": 0.8032267358110055,
+            "support": 1680
+          }
+        },
+        "errors": {
+          "correct": 3163,
+          "wrong_type": 35,
+          "wrong_boundary": 227,
+          "wrong_boundary_and_type": 98,
+          "missed": 478,
+          "spurious": 189
+        }
+      }
+    },
     "natasha": {
       "c3_test": {
         "f1": 0.9346331708536433,
@@ -371,6 +531,70 @@
           "spurious": 1234
         }
       }
+    },
+    "yandexgpt_lite_few": {
+      "c3_test": {
+        "f1": 0.6855113636363637,
+        "f1_ci95": [
+          0.667908718092987,
+          0.7049994104988502
+        ],
+        "f1_without_train_duplicates": 0.6848215565429268,
+        "seen_unseen": {
+          "seen": {
+            "precision": 0.9634601043997018,
+            "recall": 0.5566566135286515,
+            "f1": 0.7056253413435282,
+            "support": 2321
+          },
+          "unseen": {
+            "precision": 0.660188457008245,
+            "recall": 0.6672619047619047,
+            "f1": 0.6637063351095323,
+            "support": 1680
+          }
+        },
+        "errors": {
+          "correct": 2413,
+          "wrong_type": 26,
+          "wrong_boundary": 189,
+          "wrong_boundary_and_type": 90,
+          "missed": 1283,
+          "spurious": 411
+        }
+      }
+    },
+    "yandexgpt_lite_zero": {
+      "c3_test": {
+        "f1": 0.675947187141217,
+        "f1_ci95": [
+          0.6577775521060013,
+          0.6964655364432764
+        ],
+        "f1_without_train_duplicates": 0.6761338936386031,
+        "seen_unseen": {
+          "seen": {
+            "precision": 0.9533639143730887,
+            "recall": 0.5372684187850064,
+            "f1": 0.68724166437035,
+            "support": 2321
+          },
+          "unseen": {
+            "precision": 0.6678722121760097,
+            "recall": 0.6595238095238095,
+            "f1": 0.6636717580113807,
+            "support": 1680
+          }
+        },
+        "errors": {
+          "correct": 2355,
+          "wrong_type": 35,
+          "wrong_boundary": 207,
+          "wrong_boundary_and_type": 104,
+          "missed": 1300,
+          "spurious": 369
+        }
+      }
     }
   },
   "comparisons": {
@@ -388,6 +612,56 @@
         "ci": [
           0.22860920605187474,
           0.24503776579428854
+        ],
+        "p_a_not_better": 0.0
+      }
+    },
+    "rubert_vs_gigachat3_lightning_few": {
+      "c3_test": {
+        "diff": 0.3869548928218738,
+        "ci": [
+          0.3694749834329316,
+          0.4037058440015962
+        ],
+        "p_a_not_better": 0.0
+      }
+    },
+    "rubert_vs_gigachat3_lightning_zero": {
+      "c3_test": {
+        "diff": 0.6157622892887267,
+        "ci": [
+          0.5969883827792243,
+          0.6335844889407695
+        ],
+        "p_a_not_better": 0.0
+      }
+    },
+    "rubert_vs_gigachat3_pro_few": {
+      "c3_test": {
+        "diff": 0.23286071082617843,
+        "ci": [
+          0.21690268076833852,
+          0.24730597872538307
+        ],
+        "p_a_not_better": 0.0
+      }
+    },
+    "rubert_vs_gigachat3_pro_zero": {
+      "c3_test": {
+        "diff": 0.29728720756595317,
+        "ci": [
+          0.28207711365547644,
+          0.3121575451334254
+        ],
+        "p_a_not_better": 0.0
+      }
+    },
+    "rubert_vs_gigachat3_ultra_few": {
+      "c3_test": {
+        "diff": 0.14828145141733995,
+        "ci": [
+          0.13473544605068277,
+          0.1613211738911936
         ],
         "p_a_not_better": 0.0
       }
@@ -462,6 +736,26 @@
           0.0004697229822574365
         ],
         "p_a_not_better": 0.892
+      }
+    },
+    "rubert_vs_yandexgpt_lite_few": {
+      "c3_test": {
+        "diff": 0.2903472725010181,
+        "ci": [
+          0.27124601199967213,
+          0.30849381344404747
+        ],
+        "p_a_not_better": 0.0
+      }
+    },
+    "rubert_vs_yandexgpt_lite_zero": {
+      "c3_test": {
+        "diff": 0.29991144899616473,
+        "ci": [
+          0.28123488458410717,
+          0.3177240611590735
+        ],
+        "p_a_not_better": 0.0
       }
     }
   }
