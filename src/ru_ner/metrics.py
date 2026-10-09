@@ -1,4 +1,9 @@
+import time
+
+import pandas as pd
 from seqeval.metrics import classification_report
+
+from ru_ner.data import tag_names
 
 ENTITY_TYPES = ["PER", "LOC", "ORG"]
 
@@ -23,3 +28,30 @@ def ner_report(y_true, y_pred):
         if etype in report:
             result[etype] = pick(report[etype])
     return result
+
+
+def evaluate_on(predict, test_sets):
+    """Run `predict(list of token lists) -> list of tag lists` on each test set, with timing."""
+    out = {}
+    for name, ds in test_sets.items():
+        sentences = list(ds["tokens"])
+        start = time.perf_counter()
+        pred = predict(sentences)
+        elapsed = time.perf_counter() - start
+        out[name] = ner_report(tag_names(ds), pred)
+        out[name]["sentences_per_sec"] = len(sentences) / elapsed
+    return out
+
+
+def results_table(results):
+    rows = []
+    for model, by_corpus in results.items():
+        for corpus, r in by_corpus.items():
+            if "overall" not in r:
+                continue
+            row = {"model": model, "corpus": corpus}
+            row.update({k: r["overall"][k] for k in ("precision", "recall", "f1")})
+            row.update({etype: r[etype]["f1"] for etype in ENTITY_TYPES})
+            row["sent/s"] = r["sentences_per_sec"]
+            rows.append(row)
+    return pd.DataFrame(rows).set_index(["model", "corpus"]).round(3)

@@ -9,10 +9,11 @@ NER для русского языка (PER, LOC, ORG). Сравниваю CRF, 
 
 - [x] Данные: Collection3, WikiNEuRal-ru, EDA
 - [x] Baseline: Natasha, CRF
-- [ ] Fine-tuning ruBERT
-- [ ] Оценка и разбор ошибок
-- [ ] Сравнение с LLM (DeepSeek, GigaChat, YandexGPT)
+- [x] Fine-tuning ruBERT
+- [ ] Инструменты оценки: bootstrap, новые сущности, типы ошибок
 - [ ] ONNX + квантизация
+- [ ] Сравнение с LLM (DeepSeek, GigaChat, YandexGPT)
+- [ ] Сравнительный разбор ошибок
 - [ ] FastAPI + Docker, демо
 
 ## Запуск

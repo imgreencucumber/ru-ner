@@ -6,32 +6,17 @@ Usage: uv run python scripts/run_baselines.py
 import itertools
 import json
 import pickle
-import time
 from pathlib import Path
-
-import pandas as pd
 
 from ru_ner.crf import predict_crf, train_crf
 from ru_ner.data import load_collection3, load_wikineural_ru, tag_names
-from ru_ner.metrics import ENTITY_TYPES, ner_report
+from ru_ner.metrics import evaluate_on, ner_report, results_table
 from ru_ner.natasha_baseline import NatashaNER
 
 RESULTS_PATH = Path("results/baselines.json")
 MODEL_PATH = Path("models/crf.pkl")
 
 CRF_GRID = {"c1": [0.05, 0.2], "c2": [0.01, 0.1]}
-
-
-def evaluate(predict, test_sets):
-    out = {}
-    for name, ds in test_sets.items():
-        sentences = list(ds["tokens"])
-        start = time.perf_counter()
-        pred = predict(sentences)
-        elapsed = time.perf_counter() - start
-        out[name] = ner_report(tag_names(ds), pred)
-        out[name]["sentences_per_sec"] = len(sentences) / elapsed
-    return out
 
 
 def tune_crf(train, validation):
@@ -47,37 +32,23 @@ def tune_crf(train, validation):
     return best
 
 
-def print_table(results):
-    rows = []
-    for model, by_corpus in results.items():
-        for corpus, r in by_corpus.items():
-            if corpus == "params":
-                continue
-            row = {"model": model, "corpus": corpus}
-            row.update({k: r["overall"][k] for k in ("precision", "recall", "f1")})
-            row.update({etype: r[etype]["f1"] for etype in ENTITY_TYPES})
-            row["sent/s"] = r["sentences_per_sec"]
-            rows.append(row)
-    print(pd.DataFrame(rows).set_index(["model", "corpus"]).round(3).to_string())
-
-
 def main():
     c3 = load_collection3()
     test_sets = {"c3_test": c3["test"], "wikineural_test": load_wikineural_ru("test")}
     results = {}
 
     natasha = NatashaNER()
-    results["natasha"] = evaluate(natasha.predict, test_sets)
+    results["natasha"] = evaluate_on(natasha.predict, test_sets)
 
     crf, params = tune_crf(c3["train"], c3["validation"])
     MODEL_PATH.parent.mkdir(exist_ok=True)
     MODEL_PATH.write_bytes(pickle.dumps(crf))
-    results["crf"] = evaluate(lambda s: predict_crf(crf, s), test_sets)
+    results["crf"] = evaluate_on(lambda s: predict_crf(crf, s), test_sets)
     results["crf"]["params"] = params
 
     RESULTS_PATH.parent.mkdir(exist_ok=True)
     RESULTS_PATH.write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
-    print_table(results)
+    print(results_table(results).to_string())
 
 
 if __name__ == "__main__":
