@@ -13,6 +13,8 @@ dependencies = [
     "accelerate>=1.0",
     "numpy",
     "pandas",
+    "sklearn-crfsuite>=0.5.0",
+    "natasha>=1.6.0",
 ]
 
 [dependency-groups]

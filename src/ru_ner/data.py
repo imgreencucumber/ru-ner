@@ -23,6 +23,11 @@ WIKINEURAL_REVISION = "74c9b9dca034bb1606a6769457983904bd976803"
 WIKINEURAL_LABELS = ["O", "B-PER", "I-PER", "B-ORG", "I-ORG", "B-LOC", "I-LOC", "B-MISC", "I-MISC"]
 
 
+def tag_names(ds):
+    """ner_tags as lists of label strings, the format seqeval and CRF work with."""
+    return [[LABELS[i] for i in tags] for tags in ds["ner_tags"]]
+
+
 def parse_conll(lines):
     """Parse `token<TAB>tag` lines into sentences separated by blank lines."""
     sentences = []

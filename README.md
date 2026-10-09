@@ -8,7 +8,7 @@ NER для русского языка (PER, LOC, ORG). Сравниваю CRF, 
 ## Roadmap
 
 - [x] Данные: Collection3, WikiNEuRal-ru, EDA
-- [ ] Baseline: Natasha, CRF
+- [x] Baseline: Natasha, CRF
 - [ ] Fine-tuning ruBERT
 - [ ] Оценка и разбор ошибок
 - [ ] Сравнение с LLM (DeepSeek, GigaChat, YandexGPT)
