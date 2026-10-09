@@ -25,7 +25,7 @@
         "f1": 0.9075098814229249,
         "support": 1256
       },
-      "sentences_per_sec": 276.7821548608581
+      "sentences_per_sec": 478.23291296749983
     },
     "wikineural_test": {
       "overall": {
@@ -52,7 +52,7 @@
         "f1": 0.48715928785252877,
         "support": 3051
       },
-      "sentences_per_sec": 325.4632844785278
+      "sentences_per_sec": 504.29889110693415
     }
   },
   "crf": {
@@ -81,7 +81,7 @@
         "f1": 0.8362173038229376,
         "support": 1256
       },
-      "sentences_per_sec": 1937.5644552515464
+      "sentences_per_sec": 2392.3171022101183
     },
     "wikineural_test": {
       "overall": {
@@ -108,7 +108,7 @@
         "f1": 0.35225153210764726,
         "support": 3051
       },
-      "sentences_per_sec": 2067.816820431614
+      "sentences_per_sec": 2623.3216603193296
     },
     "params": {
       "c1": 0.05,

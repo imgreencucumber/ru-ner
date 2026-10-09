@@ -1,9 +1,29 @@
 import numpy as np
 
-from ru_ner.bert import IGNORE, align_labels, compute_metrics, word_predictions
-from ru_ner.data import LABEL2ID
+from ru_ner.bert import (
+    ALLOWED,
+    ALLOWED_START,
+    IGNORE,
+    align_labels,
+    compute_metrics,
+    viterbi_decode,
+    word_log_probs,
+    word_predictions,
+)
+from ru_ner.data import LABEL2ID, LABELS
 
 B_PER, I_PER, OUT = LABEL2ID["B-PER"], LABEL2ID["I-PER"], LABEL2ID["O"]
+B_ORG, I_ORG = LABEL2ID["B-ORG"], LABEL2ID["I-ORG"]
+
+
+def log_probs_from(rows):
+    """Turn {label_id: prob} dicts into a (n_words, n_labels) log-prob matrix."""
+    probs = np.full((len(rows), len(LABELS)), 1e-6)
+    for i, row in enumerate(rows):
+        for label, p in row.items():
+            probs[i, label] = p
+    return np.log(probs / probs.sum(1, keepdims=True))
+
 
 # [CLS] Сил ##уан ##ов посетил [SEP] for the words ["Силуанов", "посетил"]
 WORD_IDS = [None, 0, 0, 0, 1, None]
@@ -31,6 +51,37 @@ def test_word_predictions_truncated_words_get_o():
     pred = [OUT, B_PER, I_PER, OUT]
 
     assert word_predictions([None, 0, 1, None], pred, n_words=3) == ["B-PER", "I-PER", "O"]
+
+
+def test_bio_constraints():
+    assert not ALLOWED[OUT, I_ORG] and not ALLOWED[B_PER, I_ORG]
+    assert ALLOWED[B_ORG, I_ORG] and ALLOWED[I_ORG, I_ORG] and ALLOWED[OUT, B_ORG]
+    assert not ALLOWED_START[I_PER] and ALLOWED_START[B_PER]
+
+
+def test_viterbi_matches_argmax_when_argmax_is_valid():
+    lp = log_probs_from([{B_PER: 0.9}, {I_PER: 0.8}, {OUT: 0.9}])
+    assert viterbi_decode(lp) == [B_PER, I_PER, OUT]
+
+
+def test_viterbi_repairs_stray_i_tag():
+    # argmax would give O, I-ORG, O; B-ORG is the next best label for the middle word
+    lp = log_probs_from([{OUT: 0.9}, {I_ORG: 0.5, B_ORG: 0.3, OUT: 0.2}, {OUT: 0.9}])
+    assert [LABELS[i] for i in lp.argmax(1)] == ["O", "I-ORG", "O"]
+    assert viterbi_decode(lp) == [OUT, B_ORG, OUT]
+
+
+def test_viterbi_drops_stray_i_tag_when_o_is_more_likely():
+    lp = log_probs_from([{OUT: 0.9}, {I_ORG: 0.45, OUT: 0.4, B_ORG: 0.15}, {OUT: 0.9}])
+    assert viterbi_decode(lp) == [OUT, OUT, OUT]
+
+
+def test_word_log_probs_forces_truncated_words_to_o():
+    subword_lp = np.log(np.full((3, len(LABELS)), 1 / len(LABELS)))
+    lp = word_log_probs([None, 0, None], subword_lp, n_words=2)
+
+    assert viterbi_decode(lp)[1] == OUT
+    assert lp[1, OUT] == 0.0 and np.isneginf(lp[1, B_PER])
 
 
 def test_compute_metrics_ignores_masked_positions():

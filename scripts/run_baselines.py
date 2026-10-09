@@ -38,12 +38,12 @@ def main():
     results = {}
 
     natasha = NatashaNER()
-    results["natasha"] = evaluate_on(natasha.predict, test_sets)
+    results["natasha"] = evaluate_on(natasha.predict, test_sets, model_name="natasha")
 
     crf, params = tune_crf(c3["train"], c3["validation"])
     MODEL_PATH.parent.mkdir(exist_ok=True)
     MODEL_PATH.write_bytes(pickle.dumps(crf))
-    results["crf"] = evaluate_on(lambda s: predict_crf(crf, s), test_sets)
+    results["crf"] = evaluate_on(lambda s: predict_crf(crf, s), test_sets, model_name="crf")
     results["crf"]["params"] = params
 
     RESULTS_PATH.parent.mkdir(exist_ok=True)

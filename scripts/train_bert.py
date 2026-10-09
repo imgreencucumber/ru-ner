@@ -31,14 +31,15 @@ def parse_args():
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--output", default="models/rubert-ner")
     p.add_argument("--results", default="results/rubert.json")
+    p.add_argument(
+        "--eval-only",
+        action="store_true",
+        help="skip training, evaluate the model already saved in --output",
+    )
     return p.parse_args()
 
 
-def main():
-    args = parse_args()
-    set_seed(args.seed)
-
-    c3 = load_collection3()
+def train(args, c3):
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     tokenized = c3.map(
         tokenize_and_align,
@@ -93,10 +94,7 @@ def main():
     trainer.save_model(args.output)
     tokenizer.save_pretrained(args.output)
 
-    ner = BertNER(args.output)
-    test_sets = {"c3_test": c3["test"], "wikineural_test": load_wikineural_ru("test")}
-    results = {"rubert": evaluate_on(ner.predict, test_sets)}
-    results["rubert"]["params"] = {
+    params = {
         "model": MODEL_NAME,
         "epochs": args.epochs,
         "lr": args.lr,
@@ -106,16 +104,38 @@ def main():
         "train_minutes": round(train_minutes, 1),
         "device": torch.cuda.get_device_name(0) if torch.cuda.is_available() else "cpu",
     }
-    results["rubert"]["val_history"] = [
+    val_history = [
         {"epoch": h["epoch"], "f1": h["eval_f1"], "loss": h["eval_loss"]}
         for h in trainer.state.log_history
         if "eval_f1" in h
     ]
+    return {"params": params, "val_history": val_history}
 
-    Path(args.results).parent.mkdir(exist_ok=True)
-    Path(args.results).write_text(
-        json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8"
-    )
+
+def main():
+    args = parse_args()
+    set_seed(args.seed)
+    results_path = Path(args.results)
+
+    c3 = load_collection3()
+    if args.eval_only:
+        # keep training info from the previous run, only metrics get recomputed
+        old = json.loads(results_path.read_text(encoding="utf-8"))["rubert"]
+        train_info = {"params": old["params"], "val_history": old["val_history"]}
+    else:
+        train_info = train(args, c3)
+
+    ner = BertNER(args.output)
+    test_sets = {"c3_test": c3["test"], "wikineural_test": load_wikineural_ru("test")}
+    results = {}
+    # the main model uses constrained decoding, plain argmax is kept for comparison
+    for name, decoding in [("rubert", "viterbi"), ("rubert_argmax", "argmax")]:
+        ner.decoding = decoding
+        results[name] = evaluate_on(ner.predict, test_sets, model_name=name)
+    results["rubert"].update(train_info)
+
+    results_path.parent.mkdir(exist_ok=True)
+    results_path.write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
     print(results_table(results).to_string())
 
 

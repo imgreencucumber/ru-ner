@@ -4,6 +4,7 @@ import pandas as pd
 from seqeval.metrics import classification_report
 
 from ru_ner.data import tag_names
+from ru_ner.evaluation import save_predictions
 
 ENTITY_TYPES = ["PER", "LOC", "ORG"]
 
@@ -30,8 +31,11 @@ def ner_report(y_true, y_pred):
     return result
 
 
-def evaluate_on(predict, test_sets):
-    """Run `predict(list of token lists) -> list of tag lists` on each test set, with timing."""
+def evaluate_on(predict, test_sets, model_name=None):
+    """Run `predict(list of token lists) -> list of tag lists` on each test set, with timing.
+
+    If model_name is given, predictions are saved to results/predictions/<model_name>/.
+    """
     out = {}
     for name, ds in test_sets.items():
         sentences = list(ds["tokens"])
@@ -40,6 +44,8 @@ def evaluate_on(predict, test_sets):
         elapsed = time.perf_counter() - start
         out[name] = ner_report(tag_names(ds), pred)
         out[name]["sentences_per_sec"] = len(sentences) / elapsed
+        if model_name:
+            save_predictions(model_name, name, pred)
     return out
 
 
