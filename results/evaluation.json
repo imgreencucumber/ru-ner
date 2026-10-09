@@ -247,6 +247,130 @@
           "spurious": 1299
         }
       }
+    },
+    "rubert_onnx": {
+      "c3_test": {
+        "f1": 0.9758586361373818,
+        "f1_ci95": [
+          0.9698916226808968,
+          0.9811472637276905
+        ],
+        "f1_without_train_duplicates": 0.9756464976148632,
+        "seen_unseen": {
+          "seen": {
+            "precision": 0.9867237687366167,
+            "recall": 0.992675570874623,
+            "f1": 0.9896907216494846,
+            "support": 2321
+          },
+          "unseen": {
+            "precision": 0.9511764705882353,
+            "recall": 0.9625,
+            "f1": 0.9568047337278106,
+            "support": 1680
+          }
+        },
+        "errors": {
+          "correct": 3921,
+          "wrong_type": 8,
+          "wrong_boundary": 57,
+          "wrong_boundary_and_type": 2,
+          "missed": 13,
+          "spurious": 38
+        }
+      },
+      "wikineural_test": {
+        "f1": 0.7994427164333852,
+        "f1_ci95": [
+          0.792110462461875,
+          0.8062230541099447
+        ],
+        "f1_without_train_duplicates": 0.7994427164333852,
+        "seen_unseen": {
+          "seen": {
+            "precision": 0.8126566416040101,
+            "recall": 0.901320361362057,
+            "f1": 0.8546952224052718,
+            "support": 2878
+          },
+          "unseen": {
+            "precision": 0.7772016592214422,
+            "recall": 0.7948278675150922,
+            "f1": 0.7859159474066306,
+            "support": 12258
+          }
+        },
+        "errors": {
+          "correct": 12337,
+          "wrong_type": 981,
+          "wrong_boundary": 819,
+          "wrong_boundary_and_type": 239,
+          "missed": 760,
+          "spurious": 1268
+        }
+      }
+    },
+    "rubert_onnx_int8": {
+      "c3_test": {
+        "f1": 0.9767210257687041,
+        "f1_ci95": [
+          0.9710889229163558,
+          0.9817451511941488
+        ],
+        "f1_without_train_duplicates": 0.9765163882958684,
+        "seen_unseen": {
+          "seen": {
+            "precision": 0.9863013698630136,
+            "recall": 0.992675570874623,
+            "f1": 0.9894782048529096,
+            "support": 2321
+          },
+          "unseen": {
+            "precision": 0.9545990566037735,
+            "recall": 0.9636904761904762,
+            "f1": 0.9591232227488151,
+            "support": 1680
+          }
+        },
+        "errors": {
+          "correct": 3923,
+          "wrong_type": 7,
+          "wrong_boundary": 54,
+          "wrong_boundary_and_type": 3,
+          "missed": 14,
+          "spurious": 38
+        }
+      },
+      "wikineural_test": {
+        "f1": 0.8001947735757182,
+        "f1_ci95": [
+          0.7928313682454786,
+          0.8073057757271047
+        ],
+        "f1_without_train_duplicates": 0.8001947735757182,
+        "seen_unseen": {
+          "seen": {
+            "precision": 0.8126566416040101,
+            "recall": 0.901320361362057,
+            "f1": 0.8546952224052718,
+            "support": 2878
+          },
+          "unseen": {
+            "precision": 0.7799150436803719,
+            "recall": 0.7938489149942894,
+            "f1": 0.7868202951283606,
+            "support": 12258
+          }
+        },
+        "errors": {
+          "correct": 12325,
+          "wrong_type": 969,
+          "wrong_boundary": 817,
+          "wrong_boundary_and_type": 240,
+          "missed": 785,
+          "spurious": 1234
+        }
+      }
     }
   },
   "comparisons": {
@@ -302,6 +426,42 @@
           0.0017401025960399902
         ],
         "p_a_not_better": 0.01
+      }
+    },
+    "rubert_vs_rubert_onnx": {
+      "c3_test": {
+        "diff": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_a_not_better": 1.0
+      },
+      "wikineural_test": {
+        "diff": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "p_a_not_better": 1.0
+      }
+    },
+    "rubert_vs_rubert_onnx_int8": {
+      "c3_test": {
+        "diff": -0.0008623896313223467,
+        "ci": [
+          -0.002558309115825863,
+          0.0006348923261002141
+        ],
+        "p_a_not_better": 0.841
+      },
+      "wikineural_test": {
+        "diff": -0.0007520571423330624,
+        "ci": [
+          -0.0019354241131561505,
+          0.0004697229822574365
+        ],
+        "p_a_not_better": 0.892
       }
     }
   }

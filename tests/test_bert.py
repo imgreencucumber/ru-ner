@@ -4,8 +4,10 @@ from ru_ner.bert import (
     ALLOWED,
     ALLOWED_START,
     IGNORE,
+    _TokenClassifier,
     align_labels,
     compute_metrics,
+    log_softmax,
     viterbi_decode,
     word_log_probs,
     word_predictions,
@@ -82,6 +84,59 @@ def test_word_log_probs_forces_truncated_words_to_o():
 
     assert viterbi_decode(lp)[1] == OUT
     assert lp[1, OUT] == 0.0 and np.isneginf(lp[1, B_PER])
+
+
+class _FakeClassifier(_TokenClassifier):
+    """Predicts B-PER for every word of sentences whose first word is 'имя', so the test can see
+    whether outputs come back in the original order after sorting by length."""
+
+    def __init__(self, batch_size):
+        self.batch_size = batch_size
+        self.decoding = "argmax"
+        self.tokenizer = _WhitespaceTokenizer()
+
+    def _logits(self, enc):
+        logits = np.zeros((*enc["input_ids"].shape, len(LABELS)))
+        logits[..., OUT] = 1.0
+        logits[enc["input_ids"] == 1, B_PER] = 2.0
+        return logits
+
+
+class _WhitespaceTokenizer:
+    """One token per word, id 1 for the word 'имя' and 2 for anything else."""
+
+    def __call__(self, batch, **kwargs):
+        width = max(len(s) for s in batch)
+        ids = np.zeros((len(batch), width), dtype=np.int64)
+        for i, s in enumerate(batch):
+            ids[i, : len(s)] = [1 if w == "имя" else 2 for w in s]
+        return _Encoding({"input_ids": ids}, [len(s) for s in batch], width)
+
+
+class _Encoding(dict):
+    def __init__(self, data, lengths, width):
+        super().__init__(data)
+        self.lengths, self.width = lengths, width
+
+    def word_ids(self, i):
+        n = self.lengths[i]
+        return list(range(n)) + [None] * (self.width - n)
+
+
+def test_predict_keeps_original_order_after_sorting_by_length():
+    sentences = [["имя", "a", "b", "c"], ["x"], ["имя"], ["y", "z"]]
+    out = _FakeClassifier(batch_size=2).predict(sentences)
+
+    assert [len(o) for o in out] == [4, 1, 1, 2]
+    assert out[0][0] == "B-PER" and out[2] == ["B-PER"] and out[1] == ["O"]
+
+
+def test_log_softmax_matches_torch():
+    import torch
+
+    x = np.random.default_rng(0).normal(size=(2, 5, 7)) * 10
+    expected = torch.log_softmax(torch.from_numpy(x), dim=-1).numpy()
+    assert np.allclose(log_softmax(x), expected)
 
 
 def test_compute_metrics_ignores_masked_positions():

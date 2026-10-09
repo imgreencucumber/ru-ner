@@ -108,24 +108,36 @@ def compute_metrics(eval_pred):
     return {"precision": r["precision"], "recall": r["recall"], "f1": r["f1"]}
 
 
-class BertNER:
-    """decoding="viterbi": best valid BIO sequence; "argmax": each word labelled independently."""
+def log_softmax(x):
+    x = x - x.max(axis=-1, keepdims=True)
+    return x - np.log(np.exp(x).sum(axis=-1, keepdims=True))
 
-    def __init__(self, model_dir, device=None, batch_size=32, decoding="viterbi"):
+
+class _TokenClassifier:
+    """Shared tokenization and decoding. Subclasses only implement `_logits`.
+
+    decoding="viterbi": best valid BIO sequence; "argmax": each word labelled independently.
+    """
+
+    def __init__(self, model_dir, batch_size=32, decoding="viterbi"):
         if decoding not in ("viterbi", "argmax"):
             raise ValueError(f"unknown decoding: {decoding}")
-        self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = AutoTokenizer.from_pretrained(model_dir)
-        self.model = AutoModelForTokenClassification.from_pretrained(model_dir)
-        self.model.to(self.device).eval()
         self.batch_size = batch_size
         self.decoding = decoding
 
-    @torch.inference_mode()
+    def _logits(self, enc):
+        """numpy arrays from the tokenizer -> logits of shape (batch, seq_len, n_labels)."""
+        raise NotImplementedError
+
     def predict(self, sentences):
-        out = []
-        for start in range(0, len(sentences), self.batch_size):
-            batch = sentences[start : start + self.batch_size]
+        # Sentences of similar length go to the same batch, so little compute is spent on padding.
+        # Results are put back in the original order.
+        order = sorted(range(len(sentences)), key=lambda i: len(sentences[i]))
+        out = [None] * len(sentences)
+        for start in range(0, len(order), self.batch_size):
+            batch_idx = order[start : start + self.batch_size]
+            batch = [sentences[i] for i in batch_idx]
             # No 128-token limit here: at test time every word must get a prediction
             enc = self.tokenizer(
                 batch,
@@ -133,16 +145,51 @@ class BertNER:
                 truncation=True,
                 max_length=512,
                 padding=True,
-                return_tensors="pt",
+                return_tensors="np",
             )
-            logits = self.model(**{k: v.to(self.device) for k, v in enc.items()}).logits
+            logits = self._logits(enc)
             if self.decoding == "argmax":
-                pred = logits.argmax(-1).cpu().tolist()
-                for i, tokens in enumerate(batch):
-                    out.append(word_predictions(enc.word_ids(i), pred[i], len(tokens)))
+                pred = logits.argmax(-1)
+                for i, (idx, tokens) in enumerate(zip(batch_idx, batch, strict=True)):
+                    out[idx] = word_predictions(enc.word_ids(i), pred[i].tolist(), len(tokens))
             else:
-                log_probs = torch.log_softmax(logits, dim=-1).cpu().numpy()
-                for i, tokens in enumerate(batch):
+                log_probs = log_softmax(logits)
+                for i, (idx, tokens) in enumerate(zip(batch_idx, batch, strict=True)):
                     word_lp = word_log_probs(enc.word_ids(i), log_probs[i], len(tokens))
-                    out.append([LABELS[j] for j in viterbi_decode(word_lp)])
+                    out[idx] = [LABELS[j] for j in viterbi_decode(word_lp)]
         return out
+
+
+class BertNER(_TokenClassifier):
+    """PyTorch backend, GPU if available."""
+
+    def __init__(self, model_dir, device=None, batch_size=32, decoding="viterbi"):
+        super().__init__(model_dir, batch_size, decoding)
+        self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+        self.model = AutoModelForTokenClassification.from_pretrained(model_dir)
+        self.model.to(self.device).eval()
+
+    @torch.inference_mode()
+    def _logits(self, enc):
+        inputs = {k: torch.from_numpy(v).to(self.device) for k, v in enc.items()}
+        return self.model(**inputs).logits.float().cpu().numpy()
+
+
+class OnnxBertNER(_TokenClassifier):
+    """ONNX Runtime backend on CPU. model_dir is only needed for the tokenizer."""
+
+    def __init__(self, model_dir, onnx_path, batch_size=32, decoding="viterbi", num_threads=None):
+        import onnxruntime as ort
+
+        super().__init__(model_dir, batch_size, decoding)
+        options = ort.SessionOptions()
+        if num_threads:
+            options.intra_op_num_threads = num_threads
+        self.session = ort.InferenceSession(
+            str(onnx_path), options, providers=["CPUExecutionProvider"]
+        )
+        self.input_names = [i.name for i in self.session.get_inputs()]
+
+    def _logits(self, enc):
+        inputs = {name: enc[name].astype(np.int64) for name in self.input_names}
+        return self.session.run(["logits"], inputs)[0]

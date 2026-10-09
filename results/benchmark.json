@@ -1,0 +1,50 @@
+{
+  "hardware": {
+    "cpu": "Intel(R) Core(TM) i3-8100 CPU @ 3.60GHz",
+    "cpu_threads": 4,
+    "gpu": "NVIDIA GeForce GTX 1060 6GB",
+    "os": "Windows-10-10.0.19045-SP0",
+    "python": "3.12.13",
+    "torch": "2.14.1+cu126",
+    "onnxruntime": "1.31.0"
+  },
+  "num_threads": 4,
+  "models": {
+    "crf": {
+      "median_ms": 0.41405000956729054,
+      "p95_ms": 1.0803700133692473,
+      "mean_ms": 0.4697733322003235,
+      "sentences_per_sec": 2351.269655027664
+    },
+    "natasha": {
+      "median_ms": 2.3079999955371022,
+      "p95_ms": 4.2921700136503205,
+      "mean_ms": 2.533921335125342,
+      "sentences_per_sec": 425.19969673951204
+    },
+    "rubert_pytorch_cpu": {
+      "median_ms": 35.90774998883717,
+      "p95_ms": 58.812349999789156,
+      "mean_ms": 37.89253633391733,
+      "sentences_per_sec": 48.85356455901384
+    },
+    "rubert_pytorch_gpu": {
+      "median_ms": 12.782849982613698,
+      "p95_ms": 15.050949988653883,
+      "mean_ms": 12.896813998037638,
+      "sentences_per_sec": 343.11927843892346
+    },
+    "rubert_onnx": {
+      "median_ms": 25.615799997467548,
+      "p95_ms": 44.92198500083761,
+      "mean_ms": 27.49385266622994,
+      "sentences_per_sec": 48.30905185583977
+    },
+    "rubert_onnx_int8": {
+      "median_ms": 15.865349996602163,
+      "p95_ms": 30.716700016637343,
+      "mean_ms": 16.869194334140047,
+      "sentences_per_sec": 59.17272126964435
+    }
+  }
+}

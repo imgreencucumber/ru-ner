@@ -11,7 +11,7 @@ NER для русского языка (PER, LOC, ORG). Сравниваю CRF, 
 - [x] Baseline: Natasha, CRF
 - [x] Fine-tuning ruBERT
 - [x] Инструменты оценки: bootstrap, новые сущности, типы ошибок
-- [ ] ONNX + квантизация
+- [x] ONNX + квантизация
 - [ ] Сравнение с LLM (DeepSeek, GigaChat, YandexGPT)
 - [ ] Сравнительный разбор ошибок
 - [ ] FastAPI + Docker, демо
