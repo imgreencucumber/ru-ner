@@ -53,11 +53,36 @@ def load_predictions(model, corpus, lengths):
     return [spans_to_tags(s, n) for s, n in zip(spans, lengths, strict=True)]
 
 
-def sentence_counts(y_true, y_pred):
-    """Per-sentence (true positives, predicted entities, gold entities), shape (n_sentences, 3)."""
+EDGE_PUNCT = {'"', "«", "»", "(", ")", "'"}
+
+
+def strip_edge_punct(spans, tokens):
+    """Drop quotes and brackets at the edges of entity spans: '" Данас "' -> 'Данас'.
+
+    Collection3 annotators sometimes include surrounding quotes into an entity and sometimes
+    don't, this makes a comparison insensitive to that. Spans of only such tokens disappear.
+    """
+    out = set()
+    for s, e, t in spans:
+        while s < e and tokens[s] in EDGE_PUNCT:
+            s += 1
+        while e > s and tokens[e - 1] in EDGE_PUNCT:
+            e -= 1
+        if s < e:
+            out.add((s, e, t))
+    return out
+
+
+def sentence_counts(y_true, y_pred, sentences=None):
+    """Per-sentence (true positives, predicted entities, gold entities), shape (n_sentences, 3).
+
+    If sentences are given, quotes and brackets at entity edges are ignored on both sides.
+    """
     rows = []
-    for t, p in zip(y_true, y_pred, strict=True):
+    for k, (t, p) in enumerate(zip(y_true, y_pred, strict=True)):
         gold, pred = set(tags_to_spans(t)), set(tags_to_spans(p))
+        if sentences is not None:
+            gold, pred = strip_edge_punct(gold, sentences[k]), strip_edge_punct(pred, sentences[k])
         rows.append((len(gold & pred), len(pred), len(gold)))
     return np.array(rows, dtype=np.int64)
 

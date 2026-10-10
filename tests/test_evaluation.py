@@ -11,6 +11,7 @@ from ru_ner.evaluation import (
     seen_unseen_report,
     sentence_counts,
     spans_to_tags,
+    strip_edge_punct,
     tags_to_spans,
 )
 from ru_ner.metrics import ner_report
@@ -69,6 +70,22 @@ def test_classify_errors():
     assert counts["missed"] == 1  # PER 8
     assert counts["spurious"] == 1  # LOC 5
     assert len(errors) == 4
+
+
+def test_lenient_counts_ignore_quotes_at_entity_edges():
+    sentences = [['"', "Данас", '"', "пишет"]]
+    y_true = [["B-ORG", "I-ORG", "I-ORG", "O"]]  # quotes inside the entity
+    y_pred = [["O", "B-ORG", "O", "O"]]  # quotes outside
+
+    assert sentence_counts(y_true, y_pred).tolist() == [[0, 1, 1]]
+    assert sentence_counts(y_true, y_pred, sentences).tolist() == [[1, 1, 1]]
+
+
+def test_strip_edge_punct_keeps_inner_punctuation_and_drops_punct_only_spans():
+    tokens = ["(", "Ханты", "-", "Мансийск", ")", '"']
+    spans = {(0, 5, "LOC"), (5, 6, "ORG")}
+
+    assert strip_edge_punct(spans, tokens) == {(1, 4, "LOC")}
 
 
 def test_seen_unseen_split():

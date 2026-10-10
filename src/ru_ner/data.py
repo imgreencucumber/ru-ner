@@ -2,6 +2,7 @@ import gzip
 
 from datasets import ClassLabel, Dataset, DatasetDict, Features, Sequence, Value, load_dataset
 from huggingface_hub import hf_hub_download
+from seqeval.metrics.sequence_labeling import get_entities
 
 LABELS = ["O", "B-PER", "I-PER", "B-LOC", "I-LOC", "B-ORG", "I-ORG"]
 LABEL2ID = {label: i for i, label in enumerate(LABELS)}
@@ -70,14 +71,33 @@ def _wikineural_to_our_labels(example):
     return {"ner_tags": [LABEL2ID["O" if t.endswith("MISC") else t] for t in tags]}
 
 
-def load_wikineural_ru(split="test"):
+def _load_wikineural_raw(split):
     if split not in ("train", "val", "test"):
         raise ValueError(f"unknown split: {split}")
-    ds = load_dataset(
+    return load_dataset(
         WIKINEURAL_REPO,
         data_files={split: f"data/{split}_ru-00000-of-00001.parquet"},
         revision=WIKINEURAL_REVISION,
         split=split,
     )
-    ds = ds.map(_wikineural_to_our_labels, remove_columns=["lang"])
+
+
+def load_wikineural_ru(split="test"):
+    ds = _load_wikineural_raw(split).map(_wikineural_to_our_labels, remove_columns=["lang"])
     return ds.cast(FEATURES)
+
+
+def wikineural_misc_spans(split="test"):
+    """MISC entities of WikiNEuRal-ru as [(start, end)] per sentence, end exclusive.
+
+    They are O in load_wikineural_ru; kept separately to check which "spurious" predictions
+    are actually MISC entities. Sentence order is the same as in load_wikineural_ru.
+    """
+    return [
+        _misc_spans([WIKINEURAL_LABELS[t] for t in tags])
+        for tags in _load_wikineural_raw(split)["ner_tags"]
+    ]
+
+
+def _misc_spans(tag_strings):
+    return [(s, e + 1) for t, s, e in get_entities(tag_strings) if t == "MISC"]

@@ -1,4 +1,4 @@
-from ru_ner.data import LABEL2ID, LABELS, _wikineural_to_our_labels, parse_conll
+from ru_ner.data import LABEL2ID, LABELS, _misc_spans, _wikineural_to_our_labels, parse_conll
 
 
 def test_parse_conll_splits_sentences_and_skips_docstart():
@@ -27,3 +27,9 @@ def test_wikineural_labels_are_remapped_and_misc_dropped():
 
     assert tags == ["O", "B-ORG", "B-LOC", "O", "O"]
     assert LABEL2ID["B-ORG"] != 3
+
+
+def test_misc_spans_are_found_and_other_types_ignored():
+    tags = ["B-MISC", "I-MISC", "O", "B-PER", "B-MISC"]
+
+    assert _misc_spans(tags) == [(0, 2), (4, 5)]
