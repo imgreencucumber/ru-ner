@@ -4,8 +4,7 @@ from datasets import ClassLabel, Dataset, DatasetDict, Features, Sequence, Value
 from huggingface_hub import hf_hub_download
 from seqeval.metrics.sequence_labeling import get_entities
 
-LABELS = ["O", "B-PER", "I-PER", "B-LOC", "I-LOC", "B-ORG", "I-ORG"]
-LABEL2ID = {label: i for i, label in enumerate(LABELS)}
+from ru_ner.labels import LABEL2ID, LABELS
 
 FEATURES = Features(
     {

@@ -1,0 +1,46 @@
+{
+  "client_hardware": {
+    "cpu": "Intel(R) Core(TM) i3-8100 CPU @ 3.60GHz",
+    "cpu_threads": 4,
+    "gpu": "NVIDIA GeForce GTX 1060 6GB",
+    "os": "Windows-10-10.0.19045-SP0",
+    "python": "3.12.13",
+    "torch": "2.14.1+cu126",
+    "onnxruntime": "1.31.0"
+  },
+  "note": "docker desktop (WSL2), 4 cpus, 1 uvicorn worker, NUM_THREADS=2 (image default); client on the same machine",
+  "levels": [
+    {
+      "concurrency": 1,
+      "requests": 300,
+      "errors": 0,
+      "rps": 26.26781131627964,
+      "median_ms": 33.68429996771738,
+      "p95_ms": 73.30214000539858
+    },
+    {
+      "concurrency": 2,
+      "requests": 300,
+      "errors": 0,
+      "rps": 38.08451494665137,
+      "median_ms": 44.534150045365095,
+      "p95_ms": 102.74266497581267
+    },
+    {
+      "concurrency": 4,
+      "requests": 300,
+      "errors": 0,
+      "rps": 45.63251849919643,
+      "median_ms": 73.87050002580509,
+      "p95_ms": 174.76901001646186
+    },
+    {
+      "concurrency": 8,
+      "requests": 300,
+      "errors": 0,
+      "rps": 40.88522620213911,
+      "median_ms": 160.64359992742538,
+      "p95_ms": 434.81073998846114
+    }
+  ]
+}

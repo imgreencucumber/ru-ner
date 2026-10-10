@@ -5,9 +5,9 @@ Usage: uv run python scripts/export_onnx.py
 """
 
 import json
+import shutil
 from pathlib import Path
 
-from ru_ner.bert import OnnxBertNER
 from ru_ner.data import load_collection3, load_wikineural_ru
 from ru_ner.export import (
     export_onnx,
@@ -16,6 +16,7 @@ from ru_ner.export import (
     optimize_for_cpu,
     quantize_int8,
 )
+from ru_ner.inference import OnnxBertNER
 from ru_ner.metrics import evaluate_on, results_table
 
 MODEL_DIR = Path("models/rubert-ner")
@@ -31,6 +32,8 @@ def main():
     fused = optimize_for_cpu(RAW_PATH, FP32_PATH)
     print("fused operators:", {k: v for k, v in fused.items() if v})
     quantize_int8(FP32_PATH, INT8_PATH)
+    # the onnx/ folder is self-contained: model + tokenizer, that's what the service needs
+    shutil.copy(MODEL_DIR / "tokenizer.json", INT8_PATH.parent / "tokenizer.json")
 
     c3 = load_collection3()
     test_sets = {"c3_test": c3["test"], "wikineural_test": load_wikineural_ru("test")}

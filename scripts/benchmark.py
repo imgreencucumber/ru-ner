@@ -16,9 +16,10 @@ import pandas as pd
 import torch
 
 from ru_ner.benchmark import hardware_info, measure_latency, measure_throughput
-from ru_ner.bert import BertNER, OnnxBertNER
+from ru_ner.bert import BertNER
 from ru_ner.crf import predict_crf
 from ru_ner.data import load_collection3
+from ru_ner.inference import OnnxBertNER
 from ru_ner.natasha_baseline import NatashaNER
 
 MODEL_DIR = Path("models/rubert-ner")

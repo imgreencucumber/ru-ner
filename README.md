@@ -14,7 +14,8 @@ NER для русского языка (PER, LOC, ORG). Сравниваю CRF, 
 - [x] ONNX + квантизация
 - [x] Сравнение с LLM (GigaChat, YandexGPT)
 - [x] Сравнительный разбор ошибок
-- [ ] FastAPI + Docker, демо
+- [x] FastAPI + Docker, нагрузочный тест, CI
+- [ ] Публикация: модель на HF Hub, демо, итоговый README
 
 ## Запуск
 
