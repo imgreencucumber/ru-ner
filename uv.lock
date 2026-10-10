@@ -1647,6 +1647,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
+    { name = "huggingface-hub" },
     { name = "numpy" },
     { name = "onnxruntime" },
     { name = "tokenizers" },
@@ -1684,6 +1685,7 @@ research = [
 [package.metadata]
 requires-dist = [
     { name = "fastapi", specifier = ">=0.143.0" },
+    { name = "huggingface-hub", specifier = ">=1.33.0" },
     { name = "numpy" },
     { name = "onnxruntime", specifier = ">=1.31.0" },
     { name = "tokenizers", specifier = ">=0.23.2" },
