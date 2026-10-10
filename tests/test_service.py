@@ -8,6 +8,15 @@ def client():
     return TestClient(create_app(ner=FakeNER()))
 
 
+def test_demo_page_is_served():
+    with client() as c:
+        response = c.get("/")
+
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]
+    assert 'fetch("extract"' in response.text
+
+
 def test_health():
     with client() as c:
         assert c.get("/health").json() == {"status": "ok"}

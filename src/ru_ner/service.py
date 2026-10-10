@@ -8,9 +8,11 @@ Settings come from environment variables:
 
 import os
 from contextlib import asynccontextmanager
+from importlib.resources import files
 from typing import Annotated, Literal
 
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
 MAX_TEXT_CHARS = 10_000
@@ -63,6 +65,12 @@ def create_app(ner=None):
         description="Named entities (PER, LOC, ORG) in Russian text, quantized ruBERT on CPU.",
         lifespan=lifespan,
     )
+
+    page = files("ru_ner").joinpath("static/index.html").read_text(encoding="utf-8")
+
+    @app.get("/", response_class=HTMLResponse, include_in_schema=False)
+    def demo_page():
+        return page
 
     @app.get("/health")
     def health():

@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ru-ner</title>
+<style>
+  :root {
+    --bg: #fcfcfb; --surface: #ffffff; --text: #0b0b0b; --muted: #52514e; --border: #dcdbd6;
+    --accent: #2a78d6;
+    --per: rgba(42, 120, 214, 0.18); --per-label: #1d5fae;
+    --loc: rgba(27, 175, 122, 0.20); --loc-label: #13805a;
+    --org: rgba(235, 104, 52, 0.20); --org-label: #b8491d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a19; --surface: #232322; --text: #f4f4f2; --muted: #c3c2b7; --border: #3a3a38;
+      --accent: #3987e5;
+      --per: rgba(57, 135, 229, 0.30); --per-label: #8dbcf2;
+      --loc: rgba(25, 158, 112, 0.32); --loc-label: #7fd6b1;
+      --org: rgba(217, 89, 38, 0.32); --org-label: #f2a585;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 48px; }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  .subtitle { color: var(--muted); margin: 0 0 24px; }
+  textarea {
+    width: 100%; min-height: 140px; padding: 12px; resize: vertical;
+    font: inherit; color: var(--text); background: var(--surface);
+    border: 1px solid var(--border); border-radius: 8px;
+  }
+  textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0 24px; }
+  button {
+    font: inherit; border-radius: 8px; padding: 8px 14px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button:disabled { opacity: 0.6; cursor: default; }
+  .examples-label { color: var(--muted); font-size: 14px; margin-left: 8px; }
+  .example { font-size: 14px; padding: 4px 10px; }
+  #result {
+    min-height: 60px; padding: 16px; line-height: 2; white-space: pre-wrap;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  }
+  #result.empty { color: var(--muted); line-height: 1.5; }
+  mark { color: inherit; border-radius: 4px; padding: 2px 4px; }
+  mark .label { font-size: 11px; font-weight: 600; margin-left: 4px; letter-spacing: 0.03em; }
+  mark.PER { background: var(--per); } mark.PER .label { color: var(--per-label); }
+  mark.LOC { background: var(--loc); } mark.LOC .label { color: var(--loc-label); }
+  mark.ORG { background: var(--org); } mark.ORG .label { color: var(--org-label); }
+  .meta { color: var(--muted); font-size: 14px; margin-top: 8px; min-height: 21px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 14px; margin-top: 16px; }
+  .note { color: var(--muted); font-size: 14px; margin-top: 32px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>NER для русского языка</h1>
+  <p class="subtitle">
+    Находит людей, места и организации. ruBERT, дообученный на Collection3,
+    квантизованный в int8 и запущенный на CPU через ONNX Runtime.
+  </p>
+
+  <textarea id="text" maxlength="10000"
+            placeholder="Вставьте текст на русском и нажмите «Найти» (или Ctrl+Enter)"></textarea>
+  <div class="row">
+    <button id="run" class="primary">Найти</button>
+    <span class="examples-label">Примеры:</span>
+    <button class="example">Минфин и МВФ</button>
+    <button class="example">Газпром</button>
+    <button class="example">Футбол</button>
+  </div>
+
+  <div id="result" class="empty">Здесь появится текст с подсвеченными сущностями.</div>
+  <div class="meta" id="meta"></div>
+  <div class="legend">
+    <mark class="PER">люди<span class="label">PER</span></mark>
+    <mark class="LOC">места<span class="label">LOC</span></mark>
+    <mark class="ORG">организации<span class="label">ORG</span></mark>
+  </div>
+
+  <p class="note">
+    API: <a href="docs">документация</a>, <code>POST /extract</code>.
+    Модель: <a href="https://huggingface.co/imgreencucumber/rubert-ner-collection3">Hugging Face</a>.
+    Код: <a href="https://github.com/imgreencucumber/ru-ner">GitHub</a>.
+    Сервис на бесплатном хостинге засыпает без запросов, поэтому первый ответ может занять около минуты.
+  </p>
+</main>
+
+<script>
+  const EXAMPLES = [
+    "Глава Минфина Антон Силуанов встретился в Москве с представителями МВФ.",
+    "Председатель правления «Газпрома» Алексей Миллер выступил на форуме в Санкт-Петербурге.",
+    "Сборная Аргентины во главе с Лионелем Месси выиграла чемпионат мира в Катаре.",
+  ];
+  const textEl = document.getElementById("text");
+  const runEl = document.getElementById("run");
+  const resultEl = document.getElementById("result");
+  const metaEl = document.getElementById("meta");
+
+  document.querySelectorAll(".example").forEach((button, i) => {
+    button.addEventListener("click", () => { textEl.value = EXAMPLES[i]; run(); });
+  });
+  runEl.addEventListener("click", run);
+  textEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) run();
+  });
+
+  // Text goes into the page only through text nodes, never as HTML
+  function render(text, entities) {
+    resultEl.replaceChildren();
+    resultEl.classList.remove("empty");
+    let pos = 0;
+    for (const e of entities) {
+      resultEl.append(document.createTextNode(text.slice(pos, e.start)));
+      const mark = document.createElement("mark");
+      mark.className = e.type;
+      mark.append(document.createTextNode(text.slice(e.start, e.end)));
+      const label = document.createElement("span");
+      label.className = "label";
+      label.textContent = e.type;
+      mark.append(label);
+      resultEl.append(mark);
+      pos = e.end;
+    }
+    resultEl.append(document.createTextNode(text.slice(pos)));
+  }
+
+  async function run() {
+    const text = textEl.value;
+    if (!text.trim()) return;
+    runEl.disabled = true;
+    metaEl.textContent = "Обработка…";
+    const started = performance.now();
+    try {
+      const response = await fetch("extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const { entities } = await response.json();
+      render(text, entities);
+      const ms = Math.round(performance.now() - started);
+      metaEl.textContent = `Найдено сущностей: ${entities.length} · ${ms} мс с учётом сети`;
+    } catch (err) {
+      metaEl.textContent = `Ошибка запроса: ${err.message}`;
+    } finally {
+      runEl.disabled = false;
+    }
+  }
+</script>
+</body>
+</html>

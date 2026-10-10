@@ -1,9 +1,7 @@
-# Everything is excluded except what the image needs
+# Everything is excluded except what the image needs; the model is downloaded from the HF Hub
 *
 !pyproject.toml
 !uv.lock
 !README.md
 !src/
-!models/rubert-ner/onnx/model_int8.onnx
-!models/rubert-ner/onnx/tokenizer.json
 **/__pycache__

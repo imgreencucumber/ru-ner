@@ -1,10 +1,11 @@
-"""Publish the model (PyTorch weights, ONNX int8, model card) and the Gradio demo to Hugging Face.
+"""Publish the model (PyTorch weights, ONNX int8, model card) to the Hugging Face Hub.
 
-Files are first assembled in outputs/hub/, templates in hub/ and space/ get the real repo names.
-Authentication: `uv run hf auth login`, or HF_TOKEN (a write token) in the environment or in .env.
+Files are first assembled in outputs/hub/, the model card template hub/model_card.md gets the real
+repo name. Authentication: `uv run hf auth login`, or HF_TOKEN (a write token) in the environment
+or in .env.
 
-Usage: uv run python scripts/publish_hf.py --dry-run          # assemble and list files only
-       uv run python scripts/publish_hf.py [--only model|space]
+Usage: uv run python scripts/publish_hf.py --dry-run    # assemble and list files only
+       uv run python scripts/publish_hf.py
 """
 
 import argparse
@@ -19,10 +20,11 @@ from huggingface_hub import HfApi
 load_dotenv()
 
 MODEL_DIR = Path("models/rubert-ner")
-STAGING = Path("outputs/hub")
+STAGING = Path("outputs/hub/model")
+CARD_TEMPLATE = Path("hub/model_card.md")
 GITHUB_URL = "https://github.com/imgreencucumber/ru-ner"
 
-MODEL_FILES = {
+FILES = {
     "config.json": MODEL_DIR / "config.json",
     "model.safetensors": MODEL_DIR / "model.safetensors",
     "tokenizer.json": MODEL_DIR / "tokenizer.json",
@@ -30,79 +32,40 @@ MODEL_FILES = {
     "onnx/model_int8.onnx": MODEL_DIR / "onnx" / "model_int8.onnx",
     "onnx/tokenizer.json": MODEL_DIR / "onnx" / "tokenizer.json",
 }
-TEMPLATES = {
-    "model": {"README.md": Path("hub/model_card.md")},
-    "space": {
-        "app.py": Path("space/app.py"),
-        "README.md": Path("space/README.md"),
-        "requirements.txt": Path("space/requirements.txt"),
-    },
-}
-
-
-def render(path, values):
-    text = path.read_text(encoding="utf-8")
-    for key, value in values.items():
-        text = text.replace("{" + key + "}", value)
-    return text
-
-
-def stage(kind, values):
-    folder = STAGING / kind
-    shutil.rmtree(folder, ignore_errors=True)
-    if kind == "model":
-        for target, source in MODEL_FILES.items():
-            (folder / target).parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy(source, folder / target)
-    for target, template in TEMPLATES[kind].items():
-        (folder / target).parent.mkdir(parents=True, exist_ok=True)
-        (folder / target).write_text(render(template, values), encoding="utf-8")
-    return folder
 
 
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--user", help="HF username, by default taken from the login")
-    p.add_argument("--model-name", default="rubert-ner-collection3")
-    p.add_argument("--space-name", default="ru-ner-demo")
-    p.add_argument("--only", choices=["model", "space"])
+    p.add_argument("--name", default="rubert-ner-collection3")
     p.add_argument("--dry-run", action="store_true")
     args = p.parse_args()
 
     api = HfApi()
-    user = args.user or api.whoami()["name"]
-    # the Space installs the package from GitHub at exactly this commit, so it must be pushed
+    repo_id = f"{args.user or api.whoami()['name']}/{args.name}"
     git_ref = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
-    values = {
-        "repo_id": f"{user}/{args.model_name}",
-        "github_url": GITHUB_URL,
-        "git_ref": git_ref,
-    }
-    repos = {"model": (values["repo_id"], "model"), "space": (f"{user}/{args.space_name}", "space")}
 
-    for kind in [args.only] if args.only else ["model", "space"]:
-        folder = stage(kind, values)
-        repo_id, repo_type = repos[kind]
-        files = sorted(f for f in folder.rglob("*") if f.is_file())
-        print(f"{repo_type} {repo_id}:")
-        for f in files:
-            print(f"  {f.relative_to(folder).as_posix():28s} {f.stat().st_size / 2**20:8.1f} MB")
-        if args.dry_run:
-            continue
-        api.create_repo(
-            repo_id,
-            repo_type=repo_type,
-            space_sdk="gradio" if kind == "space" else None,
-            exist_ok=True,
-        )
-        api.upload_folder(
-            folder_path=folder,
-            repo_id=repo_id,
-            repo_type=repo_type,
-            commit_message=f"Upload from {GITHUB_URL}/commit/{git_ref}",
-        )
-        prefix = "spaces/" if kind == "space" else ""
-        print(f"  uploaded: https://huggingface.co/{prefix}{repo_id}")
+    shutil.rmtree(STAGING, ignore_errors=True)
+    for target, source in FILES.items():
+        (STAGING / target).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(source, STAGING / target)
+    card = CARD_TEMPLATE.read_text(encoding="utf-8")
+    card = card.replace("{repo_id}", repo_id).replace("{github_url}", GITHUB_URL)
+    (STAGING / "README.md").write_text(card, encoding="utf-8")
+
+    print(f"model {repo_id}:")
+    for f in sorted(f for f in STAGING.rglob("*") if f.is_file()):
+        print(f"  {f.relative_to(STAGING).as_posix():24s} {f.stat().st_size / 2**20:8.1f} MB")
+    if args.dry_run:
+        return
+
+    api.create_repo(repo_id, exist_ok=True)
+    api.upload_folder(
+        folder_path=STAGING,
+        repo_id=repo_id,
+        commit_message=f"Upload from {GITHUB_URL}/commit/{git_ref}",
+    )
+    print(f"uploaded: https://huggingface.co/{repo_id}")
 
 
 if __name__ == "__main__":

@@ -16,22 +16,33 @@ COPY pyproject.toml uv.lock ./
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-default-groups --no-install-project
 
+# The model comes from the Hugging Face Hub at a fixed revision, so the image builds from a clean
+# checkout and always contains the same weights.
+ARG MODEL_REPO=imgreencucumber/rubert-ner-collection3
+ARG MODEL_REVISION=bf9a7fa27206df505c6f3bca38ab3d43f93ba18c
+RUN python -c "from huggingface_hub import snapshot_download; \
+snapshot_download('${MODEL_REPO}', revision='${MODEL_REVISION}', allow_patterns=['onnx/*'], \
+local_dir='/tmp/hub')" \
+    && mv /tmp/hub/onnx /app/model \
+    && rm -rf /tmp/hub
+
 COPY README.md ./
 COPY src ./src
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-default-groups
 
-COPY models/rubert-ner/onnx/model_int8.onnx models/rubert-ner/onnx/tokenizer.json ./model/
 # ONNX Runtime threads per request. More threads = faster single request, but concurrent
 # requests then compete for the same cores. On 4 cores 2 threads gave the same single-request
 # latency as 4 and almost the best throughput under load (results/service_threads.json).
 ENV MODEL_DIR=/app/model \
-    NUM_THREADS=2
+    NUM_THREADS=2 \
+    PORT=8000
 
 RUN useradd --create-home app
 USER app
 
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s \
-    CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
-CMD ["uvicorn", "ru_ner.service:app", "--host", "0.0.0.0", "--port", "8000"]
+    CMD ["sh", "-c", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:${PORT}/health')\""]
+# Hosting platforms like Render pass the port to listen on in $PORT
+CMD ["sh", "-c", "exec uvicorn ru_ner.service:app --host 0.0.0.0 --port ${PORT}"]
