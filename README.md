@@ -76,7 +76,7 @@ curl -X POST http://127.0.0.1:8000/extract -H "Content-Type: application/json" \
 ```
 
 `start` и `end` — позиции символов во входном тексте. Модель при сборке образа скачивается с Hugging Face,
-поэтому образ собирается из чистого репозитория. Для деплоя на Render в репозитории есть [render.yaml](render.yaml).
+поэтому образ собирается из чистого репозитория. Деплой в Yandex Cloud Serverless Containers: [deploy/yandex_cloud.md](deploy/yandex_cloud.md).
 
 ## Как устроено
 
