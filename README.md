@@ -6,6 +6,8 @@ NER для русского языка: люди (PER), места (LOC) и ор
 На одном тесте сравниваю CRF, Natasha, дообученный ruBERT и LLM (GigaChat, YandexGPT) по качеству и скорости.
 Лучшая модель квантизована в int8 и работает как сервис на FastAPI на обычном CPU, без PyTorch и GPU.
 
+- **Демо:** https://bbah6po92m455iqd08ev.containers.yandexcloud.net/ (документация API: [/docs](https://bbah6po92m455iqd08ev.containers.yandexcloud.net/docs)).
+  Контейнер останавливается без запросов, поэтому первый ответ после паузы занимает около 5 секунд.
 - Модель на Hugging Face: [imgreencucumber/rubert-ner-collection3](https://huggingface.co/imgreencucumber/rubert-ner-collection3)
 - Анализ данных: [notebooks/01_eda.ipynb](notebooks/01_eda.ipynb)
 - Разбор ошибок всех моделей: [notebooks/02_error_analysis.ipynb](notebooks/02_error_analysis.ipynb)
@@ -52,7 +54,8 @@ NER для русского языка: люди (PER), места (LOC) и ор
 ## Демо и API
 
 Сервис отдаёт страницу для ручной проверки (`/`), API (`POST /extract`, `POST /extract/batch`)
-и документацию (`/docs`).
+и документацию (`/docs`). Развёрнут в Yandex Cloud Serverless Containers (1 ядро, 1 ГБ памяти):
+холодный старт около 5 секунд, дальше 150–200 мс на запрос с учётом сети.
 
 ```bash
 docker build -t ru-ner .

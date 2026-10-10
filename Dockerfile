@@ -35,14 +35,14 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 # requests then compete for the same cores. On 4 cores 2 threads gave the same single-request
 # latency as 4 and almost the best throughput under load (results/service_threads.json).
 ENV MODEL_DIR=/app/model \
-    NUM_THREADS=2 \
-    PORT=8000
+    NUM_THREADS=2
 
 RUN useradd --create-home app
 USER app
 
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s \
-    CMD ["sh", "-c", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:${PORT}/health')\""]
-# Hosting platforms like Render pass the port to listen on in $PORT
-CMD ["sh", "-c", "exec uvicorn ru_ner.service:app --host 0.0.0.0 --port ${PORT}"]
+    CMD ["sh", "-c", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:${PORT:-8000}/health')\""]
+# Platforms like Yandex Cloud Serverless Containers pass the port in $PORT (8080 there).
+# PORT is deliberately not set with ENV: a value baked into the image wins over the platform's one.
+CMD ["sh", "-c", "exec uvicorn ru_ner.service:app --host 0.0.0.0 --port ${PORT:-8000}"]

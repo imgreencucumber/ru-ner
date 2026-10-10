@@ -24,10 +24,13 @@ yc container registry create --name ru-ner
 yc container registry configure-docker
 $REGISTRY_ID = yc container registry get --name ru-ner --format json --jq .id
 
-docker build -t ru-ner .
+docker build --provenance=false --sbom=false --platform linux/amd64 -t ru-ner .
 docker tag ru-ner cr.yandex/$REGISTRY_ID/ru-ner:v1
 docker push cr.yandex/$REGISTRY_ID/ru-ner:v1
 ```
+
+Флаги `--provenance=false --sbom=false` обязательны для Docker Desktop: без них к образу добавляется
+манифест аттестации, и Container Registry отвечает `Cannot read manifest data`.
 
 ## 3. Сервисный аккаунт для скачивания образа
 
@@ -60,7 +63,9 @@ yc serverless container revision deploy `
 - `--memory 1GB`: по умолчанию 128 МБ, а сервису с моделью нужно около 300–400 МБ.
 - `--execution-timeout 30s`: по умолчанию 3 секунды, этого не хватит на холодный старт.
 - `NUM_THREADS=1`: у экземпляра одно ядро, больше потоков ONNX Runtime только мешают друг другу.
-- Порт задавать не нужно: Yandex Cloud передаёт его в переменной `PORT`, сервис её читает.
+- Порт задавать не нужно: Yandex Cloud передаёт его в переменной `PORT` (8080), сервис её читает.
+  Если в логах (`yc logging read --since 1h`) видно `Address 127.0.0.1:8080 is not available`,
+  значит, сервис слушает другой порт; в образе не должно быть `ENV PORT=...`.
 
 ## 5. Публичный доступ и адрес
 
